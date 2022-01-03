@@ -1,11 +1,10 @@
 import React from "react";
 import propTypes from "prop-types";
 import { bool } from "prop-types";
-
 import ImageGalleryItem from "../ImageGalleryItem";
 import Button from "../Button";
-import Loader from "../Loader/Loader";
-import Modal from "../Modal/Modal";
+import Loader from "../Loader";
+import Modal from "../Modal";
 import { GalleryWrapper, List } from "./ImageGallery.style";
 
 class ImageGallery extends React.Component {
@@ -22,12 +21,12 @@ class ImageGallery extends React.Component {
   };
 
   render() {
-    const { photos, isloading, isloadingMoreBtn, onLoadMore } = this.props;
+    const { photos, isLoading, isLoadingMoreBtn, onLoadMore } = this.props;
     const { selectedPhoto } = this.state;
 
     return (
       <GalleryWrapper>
-        {isloading && <Loader />}
+        {isLoading && <Loader />}
 
         <List>
           {photos.map((photo, index) => (
@@ -40,9 +39,7 @@ class ImageGallery extends React.Component {
           ))}
         </List>
 
-        {isloadingMoreBtn && (
-          <Button text="Load more" onLoadMore={onLoadMore} />
-        )}
+        {isLoadingMoreBtn && <Button text="Load more" onClick={onLoadMore} />}
 
         {selectedPhoto && (
           <Modal closeModal={this.removeSelectedPhoto}>
@@ -58,7 +55,7 @@ export default ImageGallery;
 
 ImageGallery.propTypes = {
   photos: propTypes.arrayOf(propTypes.object),
-  onClick: propTypes.func,
   onLoadMore: propTypes.func,
+  isLoading: bool,
   isloadingMoreBtn: bool,
 };

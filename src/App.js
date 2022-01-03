@@ -1,20 +1,47 @@
 import React from "react";
-import { ToastContainer } from "react-toastify";
-
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import fetchPhotos from "./services/photosApi";
 import SearchBar from "./components/Searchbar";
 import ImageGallery from "./components/ImageGallery";
 
-// import Modal from "./components/Modal/Modal";
-
 class App extends React.Component {
   state = {
-    photos: [],
     searchQuery: "",
+    photos: [],
     currentPage: 1,
     isLoading: false,
-    loadingMoreBtn: false,
+    isLoadingMoreBtn: false,
   };
+
+  componentDidUpdate(prevProps, prevState) {
+    const { searchQuery, currentPage } = this.state;
+
+    if (
+      prevState.searchQuery !== searchQuery ||
+      prevState.currentPage !== currentPage
+    ) {
+      this.setState({ isLoading: true });
+
+      fetchPhotos(searchQuery, currentPage)
+        .then((nextPhotos) => {
+          this.setState((prevState) => ({
+            photos: [...prevState.photos, ...nextPhotos.hits],
+            isLoadingMoreBtn: true,
+          }));
+
+          if (this.state.photos.length === 0) {
+            toast.info("No results were found for your search.");
+          }
+
+          if (nextPhotos.totalHits === this.state.photos.length) {
+            this.setState({ isLoadingMoreBtn: false });
+          }
+        })
+        .catch((error) => console.log(error))
+        .finally(() => this.setState({ isLoading: false }));
+    }
+  }
 
   onSubmit = (searchQuery) => {
     this.setState({
@@ -30,36 +57,6 @@ class App extends React.Component {
     }));
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    if (
-      prevState.searchQuery !== this.state.searchQuery ||
-      prevState.currentPage !== this.state.currentPage
-    ) {
-      this.setState({ isLoading: true });
-
-      fetchPhotos(this.state.searchQuery, this.state.currentPage)
-        .then((nextPhotos) => {
-          this.setState((prevState) => ({
-            photos: [...prevState.photos, ...nextPhotos.hits],
-            loadingMoreBtn: true,
-          }));
-
-          if (this.state.photos.length === 0) {
-            console.log("По вашему запросу пусто");
-          }
-
-          if (nextPhotos.totalHits === this.state.photos.length) {
-            this.setState({ loadingMoreBtn: false });
-          }
-        })
-        .catch((error) => console.log(error))
-        .finally(() => {
-          this.setState({ isLoading: false });
-          console.log(this.state.photos.length);
-        });
-    }
-  }
-
   render() {
     return (
       <>
@@ -69,8 +66,8 @@ class App extends React.Component {
           <ImageGallery
             photos={this.state.photos}
             onLoadMore={this.onLoadMore}
-            isloading={this.state.isLoading}
-            isloadingMoreBtn={this.state.loadingMoreBtn}
+            isLoading={this.state.isLoading}
+            isLoadingMoreBtn={this.state.isLoadingMoreBtn}
           />
         )}
 
